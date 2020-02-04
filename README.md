@@ -19,7 +19,7 @@ To upload a file to the usb2snes inside the `/games` directory:
 
 To upload a file to a usb2snes inside the `/games` directory and then boot it:
 
-    > usb2snes-uploader.py Castle_Platformer.sfc -d /games
+    > usb2snes-uploader.py -b Castle_Platformer.sfc -d /games
 
 
 
