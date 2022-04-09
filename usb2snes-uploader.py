@@ -81,7 +81,15 @@ class Usb2Snes:
 
     async def _response(self):
         r = json.loads(await self._socket.recv())
-        return r['Results']
+        r = r['Results']
+
+        if not isinstance(r, list):
+            raise TypeError("Invalid response type, expected a list of strings.")
+
+        if not all(isinstance(i, str) for i in r):
+            raise TypeError("Invalid response type, expected a list of strings.")
+
+        return r
 
 
     async def _request_response(self, opcode, *operands):
