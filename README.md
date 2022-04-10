@@ -26,7 +26,9 @@ To upload a file to a usb2snes inside the `/games` directory and then boot it:
 Requirements
 ============
 
- * usb2snes firmware by Redguyyy ([Download Link](https://github.com/RedGuyyyy/sd2snes/releases/))
+ * an sd2snes or FXPAK with usb2snes compatible firmware
+    * usb2snes firmware by Redguyyy ([Download Link](https://github.com/RedGuyyyy/sd2snes/releases/))
+    * sd2snes/FXPAK [Firmware v1.11.0 beta 1](https://sd2snes.de/blog/archives/1157)
  * a usb2snes webserver ([QUsb2Snes](https://skarsnik.github.io/QUsb2snes/) is recommended)
  * python 3.7 or later
  * [python-websockets](https://github.com/aaugustin/websockets)
