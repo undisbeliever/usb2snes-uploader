@@ -48,7 +48,7 @@ import websocket  # type: ignore[import]
 class Usb2Snes:
     BLOCK_SIZE: Final[int] = 1024
 
-    DIR_PATH_TYPE: Final[str] = '0'
+    DIR_PATH_TYPE: Final[str] = "0"
 
     USB2SNES_SRAM_OFFSET: Final[int] = 0xE00000
     USB2SNES_WRAM_OFFSET: Final[int] = 0xF50000
@@ -165,7 +165,9 @@ class Usb2Snes:
             out += o
 
         if len(out) != size:
-            raise RuntimeError(f"Size mismatch: got { len(out) } bytes, expected { size }")
+            raise RuntimeError(
+                f"Size mismatch: got { len(out) } bytes, expected { size }"
+            )
 
         return out
 
@@ -195,7 +197,9 @@ class Usb2Snes:
             return self.read_offset((addr & 0x01FFFF) | self.USB2SNES_WRAM_OFFSET, size)
         elif wram_bank & 0x7F < 0x40:
             if addr & 0xFFFF >= 0x2000:
-                return self.read_offset((addr & 0x1FFF) | self.USB2SNES_WRAM_OFFSET, size)
+                return self.read_offset(
+                    (addr & 0x1FFF) | self.USB2SNES_WRAM_OFFSET, size
+                )
 
         raise ValueError("addr is not a Work-RAM address")
 
@@ -208,13 +212,13 @@ class Usb2Snes:
 
         Usb2Snes._check_usb2snes_path(dest_filename)
 
-        with open(source_filename, 'rb') as fp:
+        with open(source_filename, "rb") as fp:
             fp.seek(0, os.SEEK_END)
             file_size = fp.tell()
 
             fp.seek(0, os.SEEK_SET)
 
-            self._request('PutFile', dest_filename, f"{file_size:x}")
+            self._request("PutFile", dest_filename, f"{file_size:x}")
 
             transferred = 0
 
@@ -226,15 +230,15 @@ class Usb2Snes:
                 block = fp.read(Usb2Snes.BLOCK_SIZE)
 
         if transferred != file_size:
-            raise RuntimeError(f"transferred bytes ({transferred}) does not match file size ({file_size})")
-
+            raise RuntimeError(
+                f"transferred bytes ({transferred}) does not match file size ({file_size})"
+            )
 
     def boot(self, usb2snes_path: str) -> None:
         """
         Boot a file on the device
         """
         self._request("Boot", usb2snes_path)
-
 
     def list(self, path: str) -> Tuple[list[str], list[str]]:
         """
@@ -255,7 +259,6 @@ class Usb2Snes:
 
         return dirs, files
 
-
     def check_file_exists(self, path: str) -> bool:
         """
         Returns true if `path` exists on the usb2snes and is a file.
@@ -271,59 +274,68 @@ class Usb2Snes:
 
         return False
 
-
     def _list_iter(self, path: Optional[str]) -> Generator[Tuple[str, str], None, None]:
         if not path:
-            path = '/'
+            path = "/"
         Usb2Snes._check_usb2snes_path(path)
 
-        response = self._request_response('List', path)
+        response = self._request_response("List", path)
 
         if len(response) % 2 != 0:
-            raise RuntimeError(f"Invalid response from usb2snes: got {len(response)} entries, expected an even number of entries")
+            raise RuntimeError(
+                f"Invalid response from usb2snes: got {len(response)} entries, expected an even number of entries"
+            )
 
         for i in range(0, len(response), 2):
             yield response[i], response[i + 1]
 
-
     @staticmethod
     def _check_usb2snes_path(path: str) -> None:
-        if '\\' in path:
-            raise RuntimeError('usb2snes path must not contain \\')
+        if "\\" in path:
+            raise RuntimeError("usb2snes path must not contain \\")
 
-        if not path.startswith('/'):
-            raise RuntimeError('usb2snes path must start with a /')
+        if not path.startswith("/"):
+            raise RuntimeError("usb2snes path must start with a /")
 
-        if path.endswith('/') and path != '/':
-            raise RuntimeError('usb2snes path must not end with /')
+        if path.endswith("/") and path != "/":
+            raise RuntimeError("usb2snes path must not end with /")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-a', '--address', required=False,
-                        default='ws://localhost:8080',
-                        help='Websocket address')
-    parser.add_argument('-b', '--boot', action='store_true',
-                        help='Boot rom after uploading')
-
+    parser.add_argument(
+        "-a",
+        "--address",
+        required=False,
+        default="ws://localhost:8080",
+        help="Websocket address",
+    )
+    parser.add_argument(
+        "-b", "--boot", action="store_true", help="Boot rom after uploading"
+    )
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-f', '--force', action='store_true',
-                       help='Always upload rom, even if file exists')
-    group.add_argument('-i', '--ignore', action='store_true',
-                       help='Ignore file already exists errors')
+    group.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="Always upload rom, even if file exists",
+    )
+    group.add_argument(
+        "-i", "--ignore", action="store_true", help="Ignore file already exists errors"
+    )
 
-    parser.add_argument('source_filename',
-                        help='File to upload')
+    parser.add_argument("source_filename", help="File to upload")
 
-    parser.add_argument('-d', '--dir', required=False,
-                            help='Directory on usb2snes to store the rom')
-    parser.add_argument('destination_filename', nargs='?',
-                            help='Filename of ROM on usb2snes')
+    parser.add_argument(
+        "-d", "--dir", required=False, help="Directory on usb2snes to store the rom"
+    )
+    parser.add_argument(
+        "destination_filename", nargs="?", help="Filename of ROM on usb2snes"
+    )
 
     args = parser.parse_args()
-
 
     basename = os.path.basename(args.source_filename)
 
@@ -333,7 +345,6 @@ def main() -> None:
         usb2snes_filename = args.destination_filename
     else:
         parser.error("Expected a --dir (-d) or destination_filename argument")
-
 
     with contextlib.closing(websocket.WebSocket()) as ws:
         ws.connect(args.address, origin="http://localhost")  # type: ignore
@@ -352,10 +363,11 @@ def main() -> None:
             elif args.ignore:
                 do_upload = False
             else:
-                raise RuntimeError(f"file already exists on device: {usb2snes_filename}")
+                raise RuntimeError(
+                    f"file already exists on device: {usb2snes_filename}"
+                )
 
             print(f"{usb2snes_filename} already exists on {device}")
-
 
         if do_upload:
             print(f"Uploading {basename} to {device}")
@@ -372,4 +384,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
