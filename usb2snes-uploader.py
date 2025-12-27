@@ -112,9 +112,11 @@ class Usb2Snes:
         self._request(opcode, *operands)
         return self._response()
 
-    def find_and_attach_device(self) -> bool:
+    def find_and_attach_device(self) -> str:
         """
         Look through the DeviceList and connect to the first SD2SNES reported.
+
+        Raises a RuntimeError if no SD2SNES device is found.
         """
 
         self._request_not_attached("DeviceList")
@@ -127,13 +129,15 @@ class Usb2Snes:
                 break
 
         if device is None:
-            return False
+            raise RuntimeError(
+                f"Could not find a usb2snes.\nDeviceList returned: {device_list}"
+            )
 
         self._request_not_attached("Attach", device)
 
         self._device = device
 
-        return True
+        return device
 
     def get_playing_filename(self) -> str:
         r = self._request_response("Info")
@@ -350,9 +354,8 @@ def main() -> None:
         ws.connect(args.address, origin="http://localhost")  # type: ignore
 
         usb2snes = Usb2Snes(ws)
-        usb2snes.find_and_attach_device()
 
-        device = usb2snes.device_name()
+        device = usb2snes.find_and_attach_device()
 
         file_exists = usb2snes.check_file_exists(usb2snes_filename)
         do_upload = not file_exists
