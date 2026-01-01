@@ -21,6 +21,7 @@ To upload a file to a usb2snes inside the `/games` directory and then boot it:
 
     > usb2snes-uploader.py -b Castle_Platformer.sfc -d /games
 
+Note for Windows users: If a command prompt window flashes and immediately exits, specify "python3" before "usb2snes-uploader.py" on the command line
 
 
 Requirements
